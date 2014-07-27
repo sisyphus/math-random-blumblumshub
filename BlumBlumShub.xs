@@ -1,3 +1,12 @@
+
+#ifdef  __MINGW32__
+#ifndef __USE_MINGW_ANSI_STDIO
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+#endif
+
+#define PERL_NO_GET_CONTEXT 1
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -91,9 +100,9 @@ int longrun(mpz_t * bitstream) {
 
     len = mpz_sizeinbase(*bitstream, 2);
 
-    if(len > 20000) croak("Wrong size random sequence for longrun test");
+    if(len > 20000) croak("Wrong size random sequence for Rlong_run test");
     if(len < 19967) {
-       warn("More than 33 leading zeroes in longrun test\n");
+       warn("More than 33 leading zeroes in long_run test\n");
        return 0;
        }
 
@@ -110,6 +119,7 @@ int longrun(mpz_t * bitstream) {
         }
 
     if(init < 34 && count < 34) return 1;
+    else warn("init: %d count: %d", init, count);
     return 0;
 
 }
@@ -121,7 +131,7 @@ int runs(mpz_t * bitstream) {
     len = mpz_sizeinbase(*bitstream, 2);
     diff = 20000 - len;
 
-    if(len > 20000) croak("Wrong size random sequence for runs test");
+    if(len > 20000) croak("Wrong size random sequence for monobit test");
     if(len < 19967) {
        warn("More than 33 leading zeroes in runs test\n");
        return 0;
@@ -130,42 +140,51 @@ int runs(mpz_t * bitstream) {
     --len;
 
     for(i = 0; i < len; ++i) {
-        t = mpz_tstbit(*bitstream, i);
-        if(t == mpz_tstbit(*bitstream, i + 1)) ++ count;
-        else {
-           if(t) {
-              if(count >= 6) ++b[5];
-              else ++b[count - 1];
-              }
-            else {
-              if(count >= 6) ++g[5];
-              else ++g[count - 1];
-              }
-            count = 1;
-            }
-         }
-
-     if(count >= 6) {
-        if(mpz_tstbit(*bitstream, len)) {
-           ++b[5];
-           if(diff) ++g[diff - 1];
-           }
-        else ++g[5];
+      t = mpz_tstbit(*bitstream, i);
+      if(t == mpz_tstbit(*bitstream, i + 1)) ++ count;
+      else {
+        if(t) {
+          if(count >= 6) ++b[5];
+          else ++b[count - 1];
         }
-     else {
-        if(mpz_tstbit(*bitstream, len)) {
-           ++b[count - 1];
-           if(diff) ++g[diff - 1];
-           }
         else {
-          count += diff;
           if(count >= 6) ++g[5];
           else ++g[count - 1];
-          }
         }
+        count = 1;
+      }
+    }
+
+    if(count >= 6) {
+      if(mpz_tstbit(*bitstream, len)) {
+        ++b[5];
+        if(diff >= 6) {
+          ++g[5];
+        }
+        else {
+          if(diff) ++g[diff - 1];
+        }
+      }
+      else ++g[5];
+      }
+    else {
+      if(mpz_tstbit(*bitstream, len)) {
+        ++b[count - 1];
+        if(diff >= 6) {
+          ++g[5];
+        }
+        else {
+          if(diff) ++ g[diff - 1];
+        }
+      }
+      else {
+        count += diff;
+        count >= 6 ? ++g[5] : ++g[count - 1];
+      }
+    }
 
 
-        if (
+    if (
             b[0] <= 2267 || g[0] <= 2267 ||
             b[0] >= 2733 || g[0] >= 2733 ||
             b[1] <= 1079 || g[1] <= 1079 ||
@@ -240,7 +259,7 @@ int poker (mpz_t * bitstream) {
     return 0;
 }
 
-void autocorrelation(mpz_t * bitstream, int offset) {
+void autocorrelation(pTHX_ mpz_t * bitstream, int offset) {
      dXSARGS;
      int i, index, last, count = 0, short_ = 0;
      mpz_t temp;
@@ -262,7 +281,7 @@ void autocorrelation(mpz_t * bitstream, int offset) {
        mpz_mul_2exp(temp, temp, 19999);
        mpz_add(*bitstream, *bitstream, temp);
      }
-     if(mpz_sizeinbase(*bitstream, 2) != 20000) croak("Bit sequence has length of %d bits in autocorrelation() function", mpz_sizeinbase(*bitstream, 2));
+     if(mpz_sizeinbase(*bitstream, 2) != 20000) croak("Bit sequence has length of %d bits in autocorrelation(aTHX) function", mpz_sizeinbase(*bitstream, 2));
 
      index = 19999 - offset;
      for(i = 0; i < index - 1; ++i) {
@@ -288,7 +307,7 @@ void autocorrelation(mpz_t * bitstream, int offset) {
    XSRETURN(2);
 }
 
-int autocorrelation_20000(mpz_t * bitstream, int offset) {
+int autocorrelation_20000(pTHX_ mpz_t * bitstream, int offset) {
     dXSARGS;
     int i, last, count = 0, short_ = 0;
     mpz_t temp;
@@ -308,7 +327,7 @@ int autocorrelation_20000(mpz_t * bitstream, int offset) {
       mpz_mul_2exp(temp, temp, 19999 + offset);
       mpz_add(*bitstream, *bitstream, temp);
     }
-   if(mpz_sizeinbase(*bitstream, 2) != 20000 + offset) croak("Bit sequence has length of %d bits in autocorrelation_20000() function; should have size of %d bits", mpz_sizeinbase(*bitstream, 2), 20000 + offset);
+   if(mpz_sizeinbase(*bitstream, 2) != 20000 + offset) croak("Bit sequence has length of %d bits in autocorrelation_20000(aTHX) function; should have size of %d bits", mpz_sizeinbase(*bitstream, 2), 20000 + offset);
 
     for(i = 0; i < 19999; ++i) {
       if(mpz_tstbit(*bitstream, i) ^ mpz_tstbit(*bitstream, i + offset)) count += 1;
@@ -327,8 +346,10 @@ int autocorrelation_20000(mpz_t * bitstream, int offset) {
     return 0;
 }
 
-
-MODULE = Math::Random::BlumBlumShub	PACKAGE = Math::Random::BlumBlumShub
+SV * _get_xs_version(pTHX) {
+     return newSVpv(XS_VERSION, 0);
+}
+MODULE = Math::Random::BlumBlumShub  PACKAGE = Math::Random::BlumBlumShub
 
 PROTOTYPES: DISABLE
 
@@ -340,36 +361,36 @@ bbs (outref, p, q, seed, bits_required)
 	mpz_t *	q
 	mpz_t *	seed
 	int	bits_required
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	bbs(outref, p, q, seed, bits_required);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        bbs(outref, p, q, seed, bits_required);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 void
 bbs_seedgen (seed, p, q)
 	mpz_t *	seed
 	mpz_t *	p
 	mpz_t *	q
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	bbs_seedgen(seed, p, q);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        bbs_seedgen(seed, p, q);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 int
 monobit (bitstream)
@@ -391,21 +412,31 @@ void
 autocorrelation (bitstream, offset)
 	mpz_t *	bitstream
 	int	offset
-	PREINIT:
-	I32* temp;
-	PPCODE:
-	temp = PL_markstack_ptr++;
-	autocorrelation(bitstream, offset);
-	if (PL_markstack_ptr != temp) {
+        PREINIT:
+        I32* temp;
+        PPCODE:
+        temp = PL_markstack_ptr++;
+        autocorrelation(aTHX_ bitstream, offset);
+        if (PL_markstack_ptr != temp) {
           /* truly void, because dXSARGS not invoked */
-	  PL_markstack_ptr = temp;
-	  XSRETURN_EMPTY; /* return empty stack */
+          PL_markstack_ptr = temp;
+          XSRETURN_EMPTY; /* return empty stack */
         }
         /* must have used dXSARGS; list context implied */
-	return; /* assume stack size is correct */
+        return; /* assume stack size is correct */
 
 int
 autocorrelation_20000 (bitstream, offset)
 	mpz_t *	bitstream
 	int	offset
+CODE:
+  RETVAL = autocorrelation_20000 (aTHX_ bitstream, offset);
+OUTPUT:  RETVAL
+
+SV *
+_get_xs_version ()
+CODE:
+  RETVAL = _get_xs_version (aTHX);
+OUTPUT:  RETVAL
+
 
