@@ -1,3 +1,8 @@
+ - 0.04
+
+ - 0.03
+   Fix error in t/bbs.t
+
  - 0.02
    Add metadata to Makefile.PL
 
