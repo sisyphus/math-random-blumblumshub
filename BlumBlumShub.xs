@@ -349,6 +349,21 @@ int autocorrelation_20000(pTHX_ mpz_t * bitstream, int offset) {
 SV * _get_xs_version(pTHX) {
      return newSVpv(XS_VERSION, 0);
 }
+
+/* Suggestion from Dana Jacobsen:
+
+     char* binstr;
+     New(0, binstr, bits_required+1, char);
+     for(i = 0; i < bits_required; ++i) {
+         mpz_powm_ui(*seed, *seed, 2, n);
+         k = mpz_tstbit(*seed, 0);
+         binstr[bits_required-1-i] = k ? '1' : '0';
+     }
+     binstr[bits_required] = 0;
+     mpz_set_str(*outref, binstr, 2);
+     Safefree(binstr);
+*/
+
 MODULE = Math::Random::BlumBlumShub  PACKAGE = Math::Random::BlumBlumShub
 
 PROTOTYPES: DISABLE
