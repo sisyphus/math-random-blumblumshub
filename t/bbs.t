@@ -102,8 +102,8 @@ if($have_gmpz) {
   my $seed = Math::GMPz->new(int(rand(100000)));
   my $random_offset = 10 + int(rand(10000));
   my $neg_seed = $seed * -1;
-  my $bitstream = Math::GMPz->new();
-  my $bitstream_20000 = Math::GMP->new();
+  my $bitstream = Math::GMPz::Rmpz_init2(20000);
+  my $bitstream_20000 = Math::GMPz::Rmpz_init2(20000 + $random_offset);
   my $size = Math::GMPz::Rmpz_sizeinbase($p1 * $p2, 2);
 
   bbs_seedgen($seed, $p1, $p2);
