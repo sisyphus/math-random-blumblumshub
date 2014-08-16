@@ -1,4 +1,6 @@
  - 0.05
+   t/bbs.t - improve efficiency of Math::GMPz tests by allocating full number of
+             bits to $bitstream & $bitstream_20000 at time of creation. (Rmpz_init2)
 
  - 0.04
    Rewrite a small section of the bbs() XS code to gain a significant boost in
