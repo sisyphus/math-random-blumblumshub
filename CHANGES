@@ -1,4 +1,6 @@
  - 0.05
+   Makefile.PL - Replace the Math::GMP PREREQ_PM with Math::GMPz (and save 20 minutes
+                 on the install-time).
    t/bbs.t - improve efficiency of Math::GMPz tests by allocating full number of
              bits to $bitstream & $bitstream_20000 at time of creation. (Rmpz_init2)
 
