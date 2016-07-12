@@ -1,4 +1,5 @@
  - 0.06
+   Replace SvIV with SvIVX in typemap.
 
  - 0.05
    Makefile.PL - Replace the Math::GMP PREREQ_PM with Math::GMPz (and save 20 minutes
