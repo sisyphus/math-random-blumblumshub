@@ -306,7 +306,7 @@ void autocorrelation(pTHX_ mpz_t * bitstream, int offset) {
 }
 
 int autocorrelation_20000(pTHX_ mpz_t * bitstream, int offset) {
-    dXSARGS;
+
     int i, last, count = 0, short_ = 0;
     mpz_t temp;
     double x, diff;
