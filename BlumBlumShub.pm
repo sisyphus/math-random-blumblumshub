@@ -8,7 +8,7 @@ require DynaLoader;
 our $VERSION = '0.07';
 #$VERSION = eval $VERSION;
 
-DynaLoader::bootstrap Math::Random::BlumBlumShub $VERSION;
+Math::Random::BlumBlumShub->DynaLoader::bootstrap($VERSION);
 
 @Math::Random::BlumBlumShub::EXPORT_OK = qw(bbs bbs_seedgen monobit longrun runs poker autocorrelation autocorrelation_20000);
 %Math::Random::BlumBlumShub::EXPORT_TAGS =(all => [qw(bbs bbs_seedgen monobit longrun runs poker autocorrelation autocorrelation_20000)]);
