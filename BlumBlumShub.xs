@@ -13,9 +13,9 @@
 
 #include <gmp.h>
 
-void bbs(mpz_t * outref, mpz_t * p, mpz_t * q, mpz_t * seed, int bits_required) {
+void bbs(mpz_t * outref, mpz_t * p, mpz_t * q, mpz_t * seed, unsigned long bits_required) {
      mpz_t n, gcd, one;
-     unsigned long i, k;
+     unsigned long i;
 
      if(mpz_fdiv_ui(*p, 4) != 3) croak ("First prime is unsuitable for Blum-Blum-Shub prbg (must be congruent to 3, mod 4)");
      if(mpz_fdiv_ui(*q, 4) != 3) croak ("Second prime is unsuitable for Blum-Blum-Shub prbg (must be congruent to 3, mod 4)");
@@ -76,7 +76,7 @@ void bbs_seedgen(mpz_t * seed, mpz_t * p, mpz_t * q) {
 }
 
 int monobit(mpz_t * bitstream) {
-    unsigned long len, i, count = 0;
+    unsigned long len, count = 0;
 
     len = mpz_sizeinbase(*bitstream, 2);
 
@@ -257,12 +257,13 @@ int poker (mpz_t * bitstream) {
     return 0;
 }
 
-void autocorrelation(pTHX_ mpz_t * bitstream, int offset) {
+void autocorrelation(pTHX_ mpz_t * bitstream, unsigned long offset) {
      dXSARGS;
      int i, index, last, count = 0, short_ = 0;
      mpz_t temp;
-     double x, diff;
      int len = mpz_sizeinbase(*bitstream, 2);
+     double x, diff;
+     PERL_UNUSED_VAR(items);
 
      if(len > 20000) croak("Wrong size random sequence for autocorrelation test");
      if(len < 19967) {
@@ -305,12 +306,11 @@ void autocorrelation(pTHX_ mpz_t * bitstream, int offset) {
    XSRETURN(2);
 }
 
-int autocorrelation_20000(pTHX_ mpz_t * bitstream, int offset) {
+int autocorrelation_20000(pTHX_ mpz_t * bitstream, unsigned long offset) {
 
     int i, last, count = 0, short_ = 0;
     mpz_t temp;
-    double x, diff;
-    int len = mpz_sizeinbase(*bitstream, 2);
+    unsigned long len = mpz_sizeinbase(*bitstream, 2);
 
     if(len > 20000 + offset) croak("Wrong size random sequence for autocorrelation_20000 test");
     if(len < 19967 + offset) {
@@ -360,7 +360,7 @@ bbs (outref, p, q, seed, bits_required)
 	mpz_t *	p
 	mpz_t *	q
 	mpz_t *	seed
-	int	bits_required
+	unsigned long	bits_required
         PREINIT:
         I32* temp;
         PPCODE:
@@ -411,7 +411,7 @@ poker (bitstream)
 void
 autocorrelation (bitstream, offset)
 	mpz_t *	bitstream
-	int	offset
+	unsigned long	offset
         PREINIT:
         I32* temp;
         PPCODE:
@@ -428,7 +428,7 @@ autocorrelation (bitstream, offset)
 int
 autocorrelation_20000 (bitstream, offset)
 	mpz_t *	bitstream
-	int	offset
+	unsigned long	offset
 CODE:
   RETVAL = autocorrelation_20000 (aTHX_ bitstream, offset);
 OUTPUT:  RETVAL
